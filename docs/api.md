@@ -478,10 +478,10 @@ Invoked by the RMQTT broker (`rmqtt-web-hook` plugin) when a message is publishe
    }
    ```
 4. If FCM returns `PushError::TokenInvalid` (e.g., app uninstalled or token expired), automatically cleans up the stale `fcmToken` from DynamoDB.
-5. Persists the message record in DynamoDB with a 30-day auto-expiring TTL:
+5. Persists the message record in DynamoDB with a 7-day auto-expiring TTL:
    - **pk**: `USER#<recipient_id>`
    - **sk**: `OFFLINE_MSG#<timestamp_ms>#<uuid>`
-   - **ttl**: Unix epoch timestamp (current time + 30 days)
+   - **ttl**: Unix epoch timestamp (current time + 7 days)
 
 #### Request Payload Example (from RMQTT)
 

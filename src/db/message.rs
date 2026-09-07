@@ -7,6 +7,8 @@ use std::collections::HashMap;
 use std::time::{SystemTime, UNIX_EPOCH};
 use uuid::Uuid;
 
+const OFFLINE_MESSAGE_TTL_SECS: u64 = 7 * 24 * 60 * 60; // 7 days (1 week)
+
 pub async fn put_offline_message(
     state: &AppState,
     recipient_id: &str,
@@ -19,7 +21,7 @@ pub async fn put_offline_message(
         .duration_since(UNIX_EPOCH)
         .unwrap_or_default();
     let now_ms = now.as_millis() as u64;
-    let ttl_secs = now.as_secs() + (30 * 24 * 60 * 60); // 30 days
+    let ttl_secs = now.as_secs() + OFFLINE_MESSAGE_TTL_SECS;
 
     let pk = format!("USER#{}", recipient_id);
     let sk = format!("OFFLINE_MSG#{}#{}", now_ms, Uuid::new_v4());
