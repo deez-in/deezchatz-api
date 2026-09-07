@@ -340,8 +340,6 @@ pub async fn register_device(
     }))
 }
 
-
-
 pub async fn update_fcm_token(
     State(state): State<AppState>,
     auth_user: crate::auth::signature::AuthenticatedUser,

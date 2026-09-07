@@ -150,7 +150,7 @@ pub async fn verify_google_id_token(
     })?;
 
     let mut validation = jsonwebtoken::Validation::new(jsonwebtoken::Algorithm::RS256);
-    
+
     let mut audiences = vec![];
     if !state.google_client_id_web.is_empty() {
         audiences.push(state.google_client_id_web.as_str());
@@ -158,7 +158,7 @@ pub async fn verify_google_id_token(
     if !state.google_client_id_android.is_empty() {
         audiences.push(state.google_client_id_android.as_str());
     }
-    
+
     validation.set_audience(&audiences);
     validation.set_issuer(&["https://accounts.google.com", "accounts.google.com"]);
 
@@ -185,15 +185,13 @@ pub async fn verify_google_id_token(
     })
 }
 
-pub async fn resolve_user_id(
-    state: &AppState,
-    email: &str,
-) -> Result<Option<String>, AppError> {
+pub async fn resolve_user_id(state: &AppState, email: &str) -> Result<Option<String>, AppError> {
     let email_pk = email_lookup_pk(email);
     let existing_pointer = get_item(state, &email_pk, lookup_sk()).await?;
-    
+
     if let Some(ref item) = existing_pointer {
-        let user_id = item.get("userId")
+        let user_id = item
+            .get("userId")
             .and_then(|v| v.as_s().ok())
             .map(|id| id.to_string());
         Ok(user_id)

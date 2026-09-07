@@ -3,12 +3,13 @@ use axum::{
     Json,
 };
 
-
 use crate::{
     auth::signature::AuthenticatedUser,
     db::{
+        device::pop_opk,
         keys::{profile_sk, user_pk},
-        lib::get_item, device::pop_opk, user::resolve_user_by_identifier,
+        lib::get_item,
+        user::resolve_user_by_identifier,
     },
     error::AppError,
     models::db::profile::Profile,

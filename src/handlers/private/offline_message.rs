@@ -10,16 +10,15 @@ static TOPIC_REGEX: LazyLock<Regex> = LazyLock::new(|| {
     .expect("static topic regex is valid")
 });
 
+use crate::models::api::webhook::WebhookPayloadReq;
 use crate::{
     db::{
-        keys::device_sk,
-        device::clear_device_fcm_token, lib::get_item, message::put_offline_message,
+        device::clear_device_fcm_token, keys::device_sk, lib::get_item,
+        message::put_offline_message,
     },
     push::{provider::PushError, WakeUpPayload},
     state::AppState,
 };
-use crate::models::api::webhook::WebhookPayloadReq;
-
 
 pub async fn handle_offline_message(
     State(state): State<AppState>,

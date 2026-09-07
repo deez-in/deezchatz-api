@@ -3,7 +3,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use uuid::Uuid;
 
 use crate::{
-    auth::oauth::{verify_google_id_token, resolve_user_id},
+    auth::oauth::{resolve_user_id, verify_google_id_token},
     db::{keys::pending_reg_key, temp::set_temp_json},
     error::AppError,
     models::api::auth::{GoogleIdTokenReq, GoogleIdTokenResp},
@@ -21,8 +21,9 @@ pub async fn verify_id_token(
     let user_id = resolve_user_id(&state, &identity.email)
         .await?
         .unwrap_or_else(|| Uuid::new_v4().to_string());
-    
-    let state_token = cache_pending_registration(&state, user_id.clone(), &identity, &req.i_key).await?;
+
+    let state_token =
+        cache_pending_registration(&state, user_id.clone(), &identity, &req.i_key).await?;
 
     tracing::info!(
         user_id = %user_id,

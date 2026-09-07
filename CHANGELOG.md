@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.0] - 2026-09-07
+
+### Added
+- **Web OAuth PKCE Account Deletion (`DELETE /users/me/oauth`)**: Secure endpoint enabling account deletion directly from web interfaces via Google OAuth 2.0 PKCE code exchange without requiring mobile cryptographic keys or VXEdDSA signatures.
+- **Multi-Client ID OAuth Configuration**: Added separate configuration support for Android (`GOOGLE_CLIENT_ID_ANDROID`) and Web (`GOOGLE_CLIENT_ID_WEB`) OAuth client IDs in `AppState` and JWT token verification.
+
+### Changed
+- **Modular OAuth Module**: Extracted and centralized Google OAuth verification, token exchange, and user resolution logic into `src/auth/oauth.rs`.
+- **User Resolution Behavior**: `resolve_user_id` now strictly searches for existing user identities without auto-registering new profiles during web deletion workflows.
+
+---
+
 ## [0.6.3] - 2026-09-03
 
 ### Fixed

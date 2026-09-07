@@ -1,7 +1,4 @@
-use crate::{
-    error::AppError,
-    state::AppState,
-};
+use crate::{error::AppError, state::AppState};
 use aws_sdk_dynamodb::types::AttributeValue;
 use std::collections::HashMap;
 use std::time::{SystemTime, UNIX_EPOCH};

@@ -390,6 +390,47 @@ Permanently deletes the caller's account, removing their user profile, registere
 
 ---
 
+### Delete Account via OAuth (Web)
+
+Deletes a user account securely from a web browser using OAuth 2.0 PKCE, without requiring the device's cryptographic identity key or signatures. This is the only endpoint that allows account deletion without a valid signature.
+
+- **Endpoint**: `DELETE /users/me/oauth`
+- **Authentication**: None (Relies on OAuth Code Exchange)
+- **Request Headers**: `Content-Type: application/json`
+- **Request Body**:
+  ```json
+  {
+    "code": "4/0AeaYSH...",
+    "codeVerifier": "some_random_pkce_verifier_string",
+    "redirectUri": "https://deezchatz.com/delete-account"
+  }
+  ```
+
+- **Example Request**:
+  ```bash
+  curl -X DELETE http://localhost:3000/users/me/oauth \
+       -H "Content-Type: application/json" \
+       -d '{
+         "code": "4/0AeaYSH...",
+         "codeVerifier": "some_random_pkce_verifier_string",
+         "redirectUri": "https://deezchatz.com/delete-account"
+       }'
+  ```
+
+- **Responses**:
+  - `200 OK`:
+    ```json
+    {
+      "status": "success",
+      "message": "Account deleted"
+    }
+    ```
+  - `401 Unauthorized`: Invalid or expired authorization code, or Google email not verified.
+  - `404 Not Found`: Account not found for the provided Google email (the email doesn't correspond to any registered user).
+  - `500 Internal Server Error`: DynamoDB transaction or deletion failure.
+
+---
+
 ### Report User
 
 Submits an abuse, harassment, or spam report against another user, optionally including message transcripts for moderation.

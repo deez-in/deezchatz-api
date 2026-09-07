@@ -3,8 +3,8 @@ use axum::{extract::State, Json};
 use uuid::Uuid;
 
 use crate::{
-    auth::signature::AuthenticatedUser,
     auth::oauth::{exchange_google_auth_code, resolve_user_id},
+    auth::signature::AuthenticatedUser,
     db::user::{delete_user_account, put_user_report},
     error::AppError,
     state::AppState,

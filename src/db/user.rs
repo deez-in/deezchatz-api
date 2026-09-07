@@ -1,7 +1,7 @@
 use crate::{
     db::{
         keys::{email_lookup_pk, lookup_sk, phone_lookup_pk, user_pk},
-        lib::{get_item, execute_batch_delete}
+        lib::{execute_batch_delete, get_item},
     },
     error::AppError,
     state::AppState,

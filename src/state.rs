@@ -58,8 +58,7 @@ impl AppState {
         let primary_table = std::env::var("PRIMARY_TABLE").expect("PRIMARY_TABLE must be set");
         let google_client_id_android =
             std::env::var("GOOGLE_CLIENT_ID_ANDROID").unwrap_or_default();
-        let google_client_id_web =
-            std::env::var("GOOGLE_CLIENT_ID_WEB").unwrap_or_default();
+        let google_client_id_web = std::env::var("GOOGLE_CLIENT_ID_WEB").unwrap_or_default();
         let google_client_secret = std::env::var("GOOGLE_CLIENT_SECRET").unwrap_or_default();
         let google_redirect_uri = std::env::var("GOOGLE_REDIRECT_URI").unwrap_or_default();
 
