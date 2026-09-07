@@ -17,7 +17,8 @@ pub struct AppState {
     /// Handlers dispatch through this trait — no provider-specific code in handlers.
     pub push_provider: Arc<dyn PushProvider>,
     pub primary_table: String,
-    pub google_client_id: String,
+    pub google_client_id_android: String,
+    pub google_client_id_web: String,
     #[allow(dead_code)]
     pub google_client_secret: String,
     #[allow(dead_code)]
@@ -55,8 +56,10 @@ impl AppState {
         tracing::info!("Loading application configuration...");
         // Tables & OAuth config
         let primary_table = std::env::var("PRIMARY_TABLE").expect("PRIMARY_TABLE must be set");
-        let google_client_id =
-            std::env::var("GOOGLE_CLIENT_ID").expect("GOOGLE_CLIENT_ID must be set");
+        let google_client_id_android =
+            std::env::var("GOOGLE_CLIENT_ID_ANDROID").unwrap_or_default();
+        let google_client_id_web =
+            std::env::var("GOOGLE_CLIENT_ID_WEB").unwrap_or_default();
         let google_client_secret = std::env::var("GOOGLE_CLIENT_SECRET").unwrap_or_default();
         let google_redirect_uri = std::env::var("GOOGLE_REDIRECT_URI").unwrap_or_default();
 
@@ -77,7 +80,8 @@ impl AppState {
             http_client,
             push_provider,
             primary_table,
-            google_client_id,
+            google_client_id_android,
+            google_client_id_web,
             google_client_secret,
             google_redirect_uri,
             google_jwks: std::sync::Arc::new(tokio::sync::RwLock::new((0, None))),

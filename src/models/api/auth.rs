@@ -25,3 +25,11 @@ pub struct GoogleIdTokenClaims {
     pub picture: Option<String>,
     pub name: Option<String>,
 }
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OAuthDeleteReq {
+    pub code: String,
+    pub code_verifier: Option<String>,
+    pub redirect_uri: String,
+}

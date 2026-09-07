@@ -54,6 +54,7 @@ async fn main() {
             post(handlers::public::device::update_fcm_token),
         )
         .route("/users/me", delete(handlers::public::user::delete_account))
+        .route("/users/me/oauth", delete(handlers::public::user::delete_account_by_oauth))
         .route("/users/report", post(handlers::public::user::report_user))
         .layer(TraceLayer::new_for_http())
         .with_state(state.clone());
