@@ -30,14 +30,6 @@ pub async fn put_offline_message(
     let mut item = HashMap::new();
     item.insert("pk".to_string(), AttributeValue::S(pk));
     item.insert("sk".to_string(), AttributeValue::S(sk));
-    item.insert(
-        "senderId".to_string(),
-        AttributeValue::S(sender_id.to_string()),
-    );
-    item.insert(
-        "senderDeviceId".to_string(),
-        AttributeValue::S(sender_device_id.to_string()),
-    );
     item.insert("topic".to_string(), AttributeValue::S(topic.to_string()));
     item.insert(
         "payload".to_string(),

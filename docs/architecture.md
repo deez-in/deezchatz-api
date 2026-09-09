@@ -116,7 +116,7 @@ All entities are stored in a single DynamoDB table using Partition Key (`pk`) an
 | **Email Pointer** | `EMAIL#{email}` | `PTR` | `userId` |
 | **Phone Pointer** | `PHONE#{phone}` | `PTR` | `userId` |
 | **User Report** | `REPORTER#{reporterId}` | `REPORTED#{reportedId}#{timestamp}` | `reporterId`, `reportedId`, `reason`, `messages`, `createdAt` |
-| **Offline Message** | `OFFLINE#{recipientId}` | `{senderId}#{timestamp}` | `senderId`, `senderDeviceId`, `topic`, `payload`, `createdAt`, `ttl` |
+| **Offline Message** | `OFFLINE#{recipientId}` | `{senderId}#{timestamp}` | `topic`, `payload`, `createdAt`, `ttl` |
 
 ### Base Table Lookups (Zero-GSI)
 
