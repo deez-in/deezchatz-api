@@ -30,6 +30,14 @@ pub fn reporter_pk(reporter_id: &str) -> String {
     format!("REPORTER#{}", reporter_id)
 }
 
+pub fn offline_message_pk(recipient_id: &str) -> String {
+    format!("OFFLINE#{}", recipient_id)
+}
+
+pub fn offline_message_sk(sender_id: &str, timestamp_secs: u64) -> String {
+    format!("{}#{}", sender_id, timestamp_secs)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -72,5 +80,14 @@ mod tests {
     fn test_static_sks() {
         assert_eq!(profile_sk(), "PROFILE");
         assert_eq!(lookup_sk(), "PTR");
+    }
+
+    #[test]
+    fn test_offline_message_keys() {
+        assert_eq!(offline_message_pk("rec-123"), "OFFLINE#rec-123");
+        assert_eq!(
+            offline_message_sk("sen-456", 1700000000),
+            "sen-456#1700000000"
+        );
     }
 }

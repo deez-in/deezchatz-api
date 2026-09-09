@@ -1,8 +1,11 @@
-use crate::{error::AppError, state::AppState};
+use crate::{
+    db::keys::{offline_message_pk, offline_message_sk},
+    error::AppError,
+    state::AppState,
+};
 use aws_sdk_dynamodb::types::AttributeValue;
 use std::collections::HashMap;
 use std::time::{SystemTime, UNIX_EPOCH};
-use uuid::Uuid;
 
 const OFFLINE_MESSAGE_TTL_SECS: u64 = 7 * 24 * 60 * 60; // 7 days (1 week)
 
@@ -18,10 +21,11 @@ pub async fn put_offline_message(
         .duration_since(UNIX_EPOCH)
         .unwrap_or_default();
     let now_ms = now.as_millis() as u64;
-    let ttl_secs = now.as_secs() + OFFLINE_MESSAGE_TTL_SECS;
+    let now_secs = now.as_secs();
+    let ttl_secs = now_secs + OFFLINE_MESSAGE_TTL_SECS;
 
-    let pk = format!("USER#{}", recipient_id);
-    let sk = format!("OFFLINE_MSG#{}#{}", now_ms, Uuid::new_v4());
+    let pk = offline_message_pk(recipient_id);
+    let sk = offline_message_sk(sender_id, now_secs);
 
     let mut item = HashMap::new();
     item.insert("pk".to_string(), AttributeValue::S(pk));
