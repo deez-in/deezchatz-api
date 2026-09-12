@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.0] - 2026-09-12
+
+### Added
+- **MQTT Client Authentication Webhook (`POST /verify-mqtt-client`)**: Implemented a private API endpoint for the RMQTT broker's HTTP auth plugin to authenticate connecting devices. Supports fixed-length (182 characters) password unpacking consisting of a VXEdDSA signature, VRF output, and a Unix epoch seconds timestamp. Validates signatures against the device's registered `signedPreKey` and enforces a $\pm$ 10s timestamp drift window.
+
+### Changed
+- **Removed Unused Offline Message Variables**: Removed redundant `senderDeviceId` references from `put_offline_message` and the offline message DynamoDB payload.
+
+---
+
 ## [0.7.0] - 2026-09-07
 
 ### Added

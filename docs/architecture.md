@@ -82,9 +82,11 @@ The API itself runs directly via `cargo run` during development (not in Docker).
 
 The RMQTT broker is configured via files in `devenv/rmqtt/`:
 - `rmqtt.toml` — Main broker configuration.
+- `rmqtt-auth-http.toml` — HTTP authentication plugin that verifies client connections via `http://host.docker.internal:3001/verify-mqtt-client`.
 - `rmqtt-web-hook.toml` — Webhook plugin that POSTs to `http://host.docker.internal:3001/offline_message` when a subscriber is offline.
 - `rmqtt-message-storage.toml` — Redis-backed message storage for offline messages.
 - `rmqtt-session-storage.toml` — Redis-backed session persistence.
+
 
 ---
 

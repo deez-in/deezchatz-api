@@ -137,15 +137,8 @@ pub async fn handle_offline_message(
             }
 
             // 3. Persist offline message in DynamoDB for reliable retrieval on reconnect
-            if let Err(e) = put_offline_message(
-                &state,
-                recipient_id,
-                sender_id,
-                sender_device_id,
-                &topic,
-                &msg_payload,
-            )
-            .await
+            if let Err(e) =
+                put_offline_message(&state, recipient_id, sender_id, &topic, &msg_payload).await
             {
                 tracing::error!(
                     recipient_id = %recipient_id,

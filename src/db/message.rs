@@ -13,7 +13,6 @@ pub async fn put_offline_message(
     state: &AppState,
     recipient_id: &str,
     sender_id: &str,
-    sender_device_id: &str,
     topic: &str,
     payload: &str,
 ) -> Result<(), AppError> {

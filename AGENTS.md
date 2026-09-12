@@ -57,7 +57,7 @@ Map of the `src/` directory:
 - `crypto.rs`: Wrappers around `libsignal-dezire` for VXEdDSA verification.
 - `auth/signature.rs`: Stateless signature auth middleware (implements Axum's `FromRequestParts`).
 - `handlers/public/`: Handlers for port 3000 (registration, key bundles, FCM updates).
-- `handlers/private/`: Handlers for port 3001 (offline message webhooks from RMQTT).
+- `handlers/private/`: Handlers for port 3001 (MQTT HTTP auth and offline message webhooks from RMQTT).
 - `db/`: DynamoDB and Redis operations (primary CRUD, temporary state).
 - `models/`: Structs representing DynamoDB items (`Profile`, `Device`) and JSON payloads.
 - `push/`: Push notification traits and implementations (`FCM`).
@@ -68,7 +68,7 @@ Map of the `src/` directory:
 
 1. **Dual-Port Design**:
    - Port `3000` (Public API): Exposed to the internet. Uses signature auth.
-   - Port `3001` (Private API): **Internal network only**. Has NO client auth. Used for webhooks from the MQTT broker. Never expose this port.
+   - Port `3001` (Private API): **Internal network only**. Has NO client auth. Used for HTTP authentication and webhooks from the MQTT broker. Never expose this port.
 2. **Error Handling**: All handler errors must return `AppError` from `error.rs`. Use the `?` operator to propagate errors naturally. Do not use `unwrap()` in handler logic.
 3. **State Sharing**: Share dependencies (DB clients, HTTP clients) via `State<AppState>`. Do not instantiate new clients per request.
 

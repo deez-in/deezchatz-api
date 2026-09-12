@@ -494,6 +494,41 @@ Submits an abuse, harassment, or spam report against another user, optionally in
 
 ---
 
+### MQTT Client Verification Webhook
+
+Invoked by the RMQTT broker HTTP authentication plugin when a device connects to verify its credentials.
+
+- **Endpoint**: `POST /verify-mqtt-client`
+- **Caller**: RMQTT Broker
+- **Authentication**: None (Protected via network isolation)
+
+#### Webhook Behavior
+
+1. **Password Extraction**: Decodes the password as a fixed 182-character string:
+   - `0..128`: Base64 VXEdDSA signature (96 bytes decoded).
+   - `128..172`: Base64 VRF output (32 bytes decoded).
+   - `172..182`: 10-digit Unix epoch seconds timestamp.
+2. **Validation**:
+   - Enforces a maximum timestamp drift of ±10 seconds.
+   - Verifies the connecting `clientid` matches the user's registered `device_id` in DynamoDB.
+   - Verifies the VXEdDSA signature and VRF output over `<username><timestamp>` using the user's `signedPreKey`.
+3. **Responses**:
+   - `200 OK` with body `"allow"`: Credentials are valid.
+   - `200 OK` with body `"deny"`: Credentials invalid, timestamp expired, signature/VRF mismatch, or missing device.
+
+#### Request Payload Example (from RMQTT)
+
+```json
+{
+  "username": "7b8f9e0a-1234-4567-89ab-cdef01234567",
+  "clientid": "c8a1e8a9-4091-4cf1-8c43-d34e9e03fba8",
+  "password": "<128-char-signature><44-char-vrf><10-digit-timestamp>",
+  "ip": "192.168.1.100"
+}
+```
+
+---
+
 ### MQTT Offline Message Webhook
 
 Invoked by the RMQTT broker (`rmqtt-web-hook` plugin) when a message is published to an offline recipient.

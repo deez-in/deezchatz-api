@@ -68,6 +68,10 @@ async fn main() {
             "/offline_message",
             post(handlers::private::offline_message::handle_offline_message),
         )
+        .route(
+            "/verify-mqtt-client",
+            post(handlers::private::mqtt_auth::verify_mqtt_client),
+        )
         .layer(TraceLayer::new_for_http())
         .with_state(state);
 
