@@ -126,10 +126,10 @@ pub async fn register_device(
             )
         };
 
-    let now_millis = SystemTime::now()
+    let now_secs = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .unwrap_or_default()
-        .as_millis() as u64;
+        .as_secs();
 
     // Profile Item (zero-GSI, no lookup attribute)
     let mut profile_item = HashMap::new();
@@ -168,7 +168,7 @@ pub async fn register_device(
     );
     profile_item.insert(
         "updatedAt".to_string(),
-        AttributeValue::N(now_millis.to_string()),
+        AttributeValue::N(now_secs.to_string()),
     );
     // Device fields merged into profile (until multi-device is implemented)
     profile_item.insert("deviceId".to_string(), AttributeValue::S(device_id.clone()));
@@ -197,7 +197,7 @@ pub async fn register_device(
     );
     device_item.insert(
         "updatedAt".to_string(),
-        AttributeValue::N(now_millis.to_string()),
+        AttributeValue::N(now_secs.to_string()),
     );
 
     let mut transact_items = Vec::new();

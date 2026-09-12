@@ -163,7 +163,7 @@ DeezChatz uses **stateless signature-based authentication** instead of JWTs. Her
 
 For every authenticated request, the client:
 
-1. Constructs a payload: `userId + timestamp` (milliseconds UTC).
+1. Constructs a payload: `userId + timestamp` (seconds UTC).
 2. VXEdDSA signs the payload with its `signedPreKey` → produces a `signature` (96 bytes) + `vrf` (32 bytes).
 3. Sends four headers: `X-User-Id`, `X-Timestamp`, `X-Signature`, `X-Vrf`.
 

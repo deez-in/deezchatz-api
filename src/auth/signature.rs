@@ -13,6 +13,23 @@ pub struct AuthenticatedUser {
     pub user_id: String,
 }
 
+pub fn validate_timestamp(timestamp_str: &str, now_secs: u64) -> Result<u64, AppError> {
+    let timestamp: u64 = timestamp_str
+        .parse()
+        .map_err(|_| AppError::Unauthorized("Invalid timestamp format".to_string()))?;
+
+    // Allow +/- 10 seconds drift
+    let drift = now_secs.abs_diff(timestamp);
+
+    if drift > 10 {
+        return Err(AppError::Unauthorized(
+            "Timestamp expired or too far in the future".to_string(),
+        ));
+    }
+
+    Ok(timestamp)
+}
+
 impl FromRequestParts<AppState> for AuthenticatedUser {
     type Rejection = AppError;
 
@@ -54,23 +71,12 @@ impl FromRequestParts<AppState> for AuthenticatedUser {
             .ok_or_else(|| AppError::Unauthorized("Missing X-Vrf header".to_string()))?;
 
         // 1. Timestamp validation (prevent replay attacks)
-        let timestamp: u64 = timestamp_str
-            .parse()
-            .map_err(|_| AppError::Unauthorized("Invalid timestamp format".to_string()))?;
-
         let now = SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .unwrap_or_default()
-            .as_millis() as u64;
+            .as_secs();
 
-        // Allow +/- 10 seconds drift
-        let drift = now.abs_diff(timestamp);
-
-        if drift > 10_000 {
-            return Err(AppError::Unauthorized(
-                "Timestamp expired or too far in the future".to_string(),
-            ));
-        }
+        validate_timestamp(timestamp_str, now)?;
 
         // 2. Fetch User Profile
         let pk = user_pk(user_id);
@@ -131,6 +137,72 @@ impl FromRequestParts<AppState> for AuthenticatedUser {
                 })
             }
             Err(_) => Err(AppError::Unauthorized("Invalid signature".to_string())),
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_validate_timestamp_success() {
+        let now = 1_700_000_000u64;
+
+        // Exact match
+        assert!(validate_timestamp("1700000000", now).is_ok());
+
+        // 10 seconds in past (boundary)
+        assert!(validate_timestamp("1699999990", now).is_ok());
+
+        // 10 seconds in future (boundary)
+        assert!(validate_timestamp("1700000010", now).is_ok());
+
+        // 5 seconds in past
+        assert!(validate_timestamp("1699999995", now).is_ok());
+    }
+
+    #[test]
+    fn test_validate_timestamp_expired() {
+        let now = 1_700_000_000u64;
+
+        // 11 seconds in past -> expired
+        let res = validate_timestamp("1699999989", now);
+        assert!(res.is_err());
+        match res.unwrap_err() {
+            AppError::Unauthorized(msg) => {
+                assert_eq!(msg, "Timestamp expired or too far in the future");
+            }
+            _ => panic!("Expected Unauthorized error"),
+        }
+    }
+
+    #[test]
+    fn test_validate_timestamp_future() {
+        let now = 1_700_000_000u64;
+
+        // 11 seconds in future -> too far in future
+        let res = validate_timestamp("1700000011", now);
+        assert!(res.is_err());
+        match res.unwrap_err() {
+            AppError::Unauthorized(msg) => {
+                assert_eq!(msg, "Timestamp expired or too far in the future");
+            }
+            _ => panic!("Expected Unauthorized error"),
+        }
+    }
+
+    #[test]
+    fn test_validate_timestamp_invalid_format() {
+        let now = 1_700_000_000u64;
+
+        let res = validate_timestamp("not_a_number", now);
+        assert!(res.is_err());
+        match res.unwrap_err() {
+            AppError::Unauthorized(msg) => {
+                assert_eq!(msg, "Invalid timestamp format");
+            }
+            _ => panic!("Expected Unauthorized error"),
         }
     }
 }

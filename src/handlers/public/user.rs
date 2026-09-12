@@ -128,7 +128,7 @@ mod tests {
                     "id": "msg_01HZX87",
                     "content": "Abusive text message content",
                     "sender_id": "c4b12d59-8f0a-4a27-a57e-399a0937a012",
-                    "created_at": 1756548239000
+                    "created_at": 1756548239
                 }
             ]
         }"#;
@@ -144,6 +144,6 @@ mod tests {
             req.messages[0].sender_id,
             "c4b12d59-8f0a-4a27-a57e-399a0937a012"
         );
-        assert_eq!(req.messages[0].created_at, 1756548239000);
+        assert_eq!(req.messages[0].created_at, 1756548239);
     }
 }

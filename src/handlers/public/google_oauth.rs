@@ -47,10 +47,10 @@ async fn cache_pending_registration(
     identity: &crate::auth::oauth::OAuthIdentity,
     i_key: &str,
 ) -> Result<String, AppError> {
-    let now_millis = SystemTime::now()
+    let now_secs = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .unwrap_or_default()
-        .as_millis() as u64;
+        .as_secs();
 
     let pending_data = TempRegistration {
         user_id,
@@ -58,7 +58,7 @@ async fn cache_pending_registration(
         email: identity.email.clone(),
         name: identity.name.clone().unwrap_or_default(),
         picture: identity.picture.clone(),
-        created_at: now_millis,
+        created_at: now_secs,
     };
 
     let json_val = serde_json::to_string(&pending_data).map_err(|e| {

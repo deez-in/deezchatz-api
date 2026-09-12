@@ -19,7 +19,6 @@ pub async fn put_offline_message(
     let now = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .unwrap_or_default();
-    let now_ms = now.as_millis() as u64;
     let now_secs = now.as_secs();
     let ttl_secs = now_secs + OFFLINE_MESSAGE_TTL_SECS;
 
@@ -36,7 +35,7 @@ pub async fn put_offline_message(
     );
     item.insert(
         "createdAt".to_string(),
-        AttributeValue::N(now_ms.to_string()),
+        AttributeValue::N(now_secs.to_string()),
     );
     item.insert("ttl".to_string(), AttributeValue::N(ttl_secs.to_string()));
 

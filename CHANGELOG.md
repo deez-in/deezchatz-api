@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.1] - 2026-09-12
+
+### Changed
+- **Standardized Timestamps to Unix Epoch Seconds**: Converted all timestamp representations and validation across the public REST API (`X-Timestamp`) and database persistence layer (`createdAt`, `updatedAt`, `TempRegistration`) from milliseconds to Unix epoch seconds, standardizing with the private MQTT broker authentication webhook.
+
+---
+
 ## [0.8.0] - 2026-09-12
 
 ### Added

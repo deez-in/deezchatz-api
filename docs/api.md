@@ -25,14 +25,14 @@ All endpoints operating on existing user data or performing key discovery requir
 | Header | Format | Description |
 | :--- | :--- | :--- |
 | `X-User-Id` | UUID v4 | The caller's unique User ID. Must be a valid UUID v4 format. |
-| `X-Timestamp` | Milliseconds (UTC) | Current UNIX epoch timestamp in milliseconds (as a numeric string). |
+| `X-Timestamp` | Seconds (UTC) | Current UNIX epoch timestamp in seconds (as a numeric string). |
 | `X-Signature` | Base64 (96 bytes decoded) | VXEdDSA signature of the payload string `userId + timestamp` signed using the user's `signedPreKey`. |
 | `X-Vrf` | Base64 (32 bytes decoded) | Verifiable Random Function (VRF) output corresponding to the signature. |
 
 #### Authentication Rules & Security
 
 - **Strict UUID v4 Validation**: The `X-User-Id` header and any user ID path parameters must strictly match the UUID v4 specification. Malformed or non-v4 UUIDs are immediately rejected with `401 Unauthorized` or `400 Bad Request`.
-- **Timestamp Drift Window**: The `X-Timestamp` must be within **±10 seconds** (10,000 ms) of the server's current UTC time. Requests outside this window fail with `401 Unauthorized: Timestamp expired or too far in the future`.
+- **Timestamp Drift Window**: The `X-Timestamp` must be within **±10 seconds** of the server's current UTC time. Requests outside this window fail with `401 Unauthorized: Timestamp expired or too far in the future`.
 - **Key Binding**: The server queries the caller's registered `signedPreKey` from DynamoDB (`USER#<userId>`) and verifies the signature over `format!("{}{}", userId, timestamp)`.
 - **Replay Protection**: Every valid signature is atomically stored in Redis under the key `replay:sig:<X-Signature>` with a **20-second TTL** (`SET NX EX 20`). Because 20 seconds exceeds the ±10s timestamp drift window, any replayed request with an identical signature is rejected with `401 Unauthorized: Replay attack detected`.
 
@@ -239,7 +239,7 @@ Retrieves the cryptographic material required by a client to initiate an end-to-
   ```bash
   curl -X POST http://localhost:3000/bundle/bob@example.com \
        -H "X-User-Id: 3fa85f64-5717-4562-b3fc-2c963f66afa6" \
-       -H "X-Timestamp: 1700000000000" \
+       -H "X-Timestamp: 1700000000" \
        -H "X-Signature: c2lnbmF0dXJl..." \
        -H "X-Vrf: dnJmb3V0cHV0..."
   ```
@@ -283,7 +283,7 @@ Retrieves read-only profile data and identity keys for a contact without consumi
   ```bash
   curl -X GET http://localhost:3000/bundle/sync/7b8f9e0a-1234-4567-89ab-cdef01234567 \
        -H "X-User-Id: 3fa85f64-5717-4562-b3fc-2c963f66afa6" \
-       -H "X-Timestamp: 1700000000000" \
+       -H "X-Timestamp: 1700000000" \
        -H "X-Signature: c2lnbmF0dXJl..." \
        -H "X-Vrf: dnJmb3V0cHV0..."
   ```
@@ -332,7 +332,7 @@ Updates the Firebase Cloud Messaging push token associated with a registered dev
   ```bash
   curl -X POST http://localhost:3000/register/device/fcm \
        -H "X-User-Id: 3fa85f64-5717-4562-b3fc-2c963f66afa6" \
-       -H "X-Timestamp: 1700000000000" \
+       -H "X-Timestamp: 1700000000" \
        -H "X-Signature: c2lnbmF0dXJl..." \
        -H "X-Vrf: dnJmb3V0cHV0..." \
        -H "Content-Type: application/json" \
@@ -372,7 +372,7 @@ Permanently deletes the caller's account, removing their user profile, registere
   ```bash
   curl -X DELETE http://localhost:3000/users/me \
        -H "X-User-Id: 3fa85f64-5717-4562-b3fc-2c963f66afa6" \
-       -H "X-Timestamp: 1700000000000" \
+       -H "X-Timestamp: 1700000000" \
        -H "X-Signature: c2lnbmF0dXJl..." \
        -H "X-Vrf: dnJmb3V0cHV0..."
   ```
@@ -463,7 +463,7 @@ Submits an abuse, harassment, or spam report against another user, optionally in
   ```bash
   curl -X POST http://localhost:3000/users/report \
        -H "X-User-Id: 3fa85f64-5717-4562-b3fc-2c963f66afa6" \
-       -H "X-Timestamp: 1700000000000" \
+       -H "X-Timestamp: 1700000000" \
        -H "X-Signature: c2lnbmF0dXJl..." \
        -H "X-Vrf: dnJmb3V0cHV0..." \
        -H "Content-Type: application/json" \

@@ -160,10 +160,10 @@ pub async fn put_user_report(
     reason: &str,
     messages_json: &str,
 ) -> Result<(), AppError> {
-    let now_ms = SystemTime::now()
+    let now_secs = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .unwrap_or_default()
-        .as_millis() as u64;
+        .as_secs();
 
     let pk = crate::db::keys::reporter_pk(reporter_id);
     let sk = reported_id;
@@ -178,7 +178,7 @@ pub async fn put_user_report(
     );
     item.insert(
         "createdAt".to_string(),
-        AttributeValue::N(now_ms.to_string()),
+        AttributeValue::N(now_secs.to_string()),
     );
 
     state
