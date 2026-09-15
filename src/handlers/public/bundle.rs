@@ -7,9 +7,8 @@ use crate::{
     auth::signature::AuthenticatedUser,
     db::{
         device::pop_opk,
-        keys::{profile_sk, user_pk},
-        lib::get_item,
-        user::resolve_user_by_identifier,
+        keys::profile_sk,
+        user::{get_user_profile_by_id, get_user_profile_by_identifier},
     },
     error::AppError,
     models::db::profile::Profile,
@@ -45,11 +44,10 @@ pub async fn get_bundle(
     loop {
         let profile_item_opt = if is_email || is_phone {
             // Pointer lookup -> profile
-            resolve_user_by_identifier(&state, &identifier).await?
+            get_user_profile_by_identifier(&state, &identifier).await?
         } else {
             // Assume userId -> query base table directly
-            let pk = user_pk(&identifier);
-            get_item(&state, &pk, profile_sk()).await?
+            get_user_profile_by_id(&state, &identifier).await?
         };
 
         let item = profile_item_opt
@@ -146,8 +144,7 @@ pub async fn get_sync_bundle(
         ));
     }
 
-    let pk = user_pk(&user_id);
-    let item = get_item(&state, &pk, profile_sk())
+    let item = get_user_profile_by_id(&state, &user_id)
         .await?
         .ok_or_else(|| AppError::NotFound("Requested user not found".to_string()))?;
 

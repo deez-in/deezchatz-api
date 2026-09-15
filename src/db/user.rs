@@ -10,36 +10,66 @@ use aws_sdk_dynamodb::types::{AttributeValue, DeleteRequest, WriteRequest};
 use std::collections::HashMap;
 use std::time::{SystemTime, UNIX_EPOCH};
 
-pub async fn resolve_user_by_identifier(
+pub async fn resolve_user_id_by_email(
+    state: &AppState,
+    email: &str,
+) -> Result<Option<String>, AppError> {
+    let email_pk = email_lookup_pk(email);
+    let existing_pointer = get_item(state, &email_pk, lookup_sk()).await?;
+
+    if let Some(ref item) = existing_pointer {
+        let user_id = item
+            .get("userId")
+            .and_then(|v| v.as_s().ok())
+            .map(|id| id.to_string());
+        Ok(user_id)
+    } else {
+        Ok(None)
+    }
+}
+
+pub async fn resolve_user_id_by_phone(
+    state: &AppState,
+    phone: &str,
+) -> Result<Option<String>, AppError> {
+    let pk = phone_lookup_pk(phone);
+    let sk = lookup_sk();
+    let pointer = get_item(state, &pk, sk).await?;
+
+    if let Some(ref item) = pointer {
+        let user_id = item
+            .get("userId")
+            .and_then(|v| v.as_s().ok())
+            .map(|id| id.to_string());
+        Ok(user_id)
+    } else {
+        Ok(None)
+    }
+}
+
+pub async fn get_user_profile_by_id(
+    state: &AppState,
+    user_id: &str,
+) -> Result<Option<HashMap<String, AttributeValue>>, AppError> {
+    let user_pk = user_pk(user_id);
+    let profile_sk = crate::db::keys::profile_sk();
+    get_item(state, &user_pk, profile_sk).await
+}
+
+pub async fn get_user_profile_by_identifier(
     state: &AppState,
     identifier: &str,
 ) -> Result<Option<HashMap<String, AttributeValue>>, AppError> {
-    let (pk, sk) = if identifier.contains('@') {
-        (
-            crate::db::keys::email_lookup_pk(identifier),
-            crate::db::keys::lookup_sk(),
-        )
+    let user_id = if identifier.contains('@') {
+        resolve_user_id_by_email(state, identifier).await?
     } else {
-        (
-            crate::db::keys::phone_lookup_pk(identifier),
-            crate::db::keys::lookup_sk(),
-        )
+        resolve_user_id_by_phone(state, identifier).await?
     };
 
-    let pointer = get_item(state, &pk, sk).await?;
-    let pointer_item = match pointer {
-        Some(item) => item,
-        None => return Ok(None),
-    };
-
-    let user_id = match pointer_item.get("userId").and_then(|v| v.as_s().ok()) {
-        Some(uid) => uid,
-        None => return Ok(None),
-    };
-
-    let user_pk = crate::db::keys::user_pk(user_id);
-    let profile_sk = crate::db::keys::profile_sk();
-    get_item(state, &user_pk, profile_sk).await
+    match user_id {
+        Some(uid) => get_user_profile_by_id(state, &uid).await,
+        None => Ok(None),
+    }
 }
 
 pub async fn delete_user_account(state: &AppState, user_id: &str) -> Result<(), AppError> {

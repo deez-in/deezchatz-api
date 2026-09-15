@@ -1,7 +1,7 @@
 use crate::{error::AppError, state::AppState};
 use aws_sdk_dynamodb::types::AttributeValue;
 
-pub async fn update_item_fcm(
+pub async fn update_device_fcm_token(
     state: &AppState,
     pk: &str,
     sk: &str,
