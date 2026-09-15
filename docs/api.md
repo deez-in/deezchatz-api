@@ -14,7 +14,9 @@ The DeezChatz API is split into two distinct logical services running on separat
 Endpoints required to onboard new users or devices do not require request signature headers:
 
 1. `POST /register/google/id_token` — Validated against Google's JWKS (RS256, audience matching `GOOGLE_CLIENT_ID`, verified email claim).
-2. `POST /register/device` — Validated via cryptographic proof-of-possession (VXEdDSA signatures and VRFs over the `state` token, `signedPreKey`, and `signedDeviceKey` using the client's `iKey`).
+2. `POST /register/google/pkce` — Exchanged with Google via OAuth 2.0 PKCE authorization code, validating JWKS and verified email claim.
+3. `POST /register/device` — Validated via cryptographic proof-of-possession (VXEdDSA signatures and VRFs over the `state` token, `signedPreKey`, and `signedDeviceKey` using the client's `iKey`).
+
 
 ### Authenticated Endpoints (Public API)
 
@@ -138,6 +140,48 @@ Verifies a Google OAuth ID token (JWT) and initiates a registration session. If 
   - `400 Bad Request`: Missing ID token, malformed JWT headers, missing `kid`, or invalid JWK.
   - `401 Unauthorized`: Invalid/expired ID token, unverified Google email, or incorrect client audience.
   - `502 Bad Gateway`: Failed to fetch or parse Google's public JWKS certificates.
+  - `500 Internal Server Error`: State serialization failure or Redis storage error.
+
+---
+
+### Verify Google Auth Code via PKCE
+
+Exchanges an authorization code using OAuth 2.0 PKCE with Google, verifies the returned ID token, and initiates a registration session. If a profile with the Google account's verified email already exists, its existing `userId` is retained. Otherwise, a new `userId` (UUID v4) is generated.
+
+- **Endpoint**: `POST /register/google/pkce`
+- **Authentication**: None (Open)
+- **Request Headers**: `Content-Type: application/json`
+- **Request Body**:
+  ```json
+  {
+    "code": "4/0AeanS0b...",
+    "codeVerifier": "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk",
+    "redirectUri": "https://deezchatz.app/auth/callback",
+    "iKey": "BR3w8K5X5y7..."
+  }
+  ```
+  | Field | Type | Required | Description |
+  | :--- | :--- | :--- | :--- |
+  | `code` | `string` | Yes | Google OAuth authorization code. |
+  | `codeVerifier` | `string` | No | PKCE code verifier matching the code challenge sent to Google. |
+  | `redirectUri` | `string` | Yes | OAuth redirect URI used during authorization code generation. |
+  | `iKey` | `string` | Yes | Base64-encoded Curve25519 public Identity Key (33 bytes decoded). |
+
+- **Responses**:
+  - `200 OK`:
+    ```json
+    {
+      "status": "success",
+      "userId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+      "state": "8b9415c1-9257-41ec-bbf6-6b22c2a05cf6",
+      "email": "user@gmail.com",
+      "name": "User Name",
+      "picture": "https://lh3.googleusercontent.com/..."
+    }
+    ```
+  - `400 Bad Request`: Missing required parameters or invalid Identity Key.
+  - `401 Unauthorized`: Invalid authorization code, unverified email, or token exchange failure.
+  - `502 Bad Gateway`: Failed upstream communication with Google token or JWKS endpoints.
   - `500 Internal Server Error`: State serialization failure or Redis storage error.
 
 ---

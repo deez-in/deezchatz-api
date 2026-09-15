@@ -65,14 +65,15 @@ src/
 ├── crypto.rs               # Wrappers around libsignal-dezire for VXEdDSA verification.
 │
 ├── auth/
+│   ├── google_oauth.rs     # Google OAuth 2.0 PKCE exchange and ID token verification.
 │   └── signature.rs        # Stateless signature auth middleware (Axum FromRequestParts extractor).
 │
 ├── handlers/
 │   ├── public/             # Handlers exposed on port 3000 (Client-facing)
-│   │   ├── google_oauth.rs # POST /register/google/id_token
 │   │   ├── bundle.rs       # POST /bundle/{id}, GET /bundle/sync/{id}
-│   │   ├── device.rs       # POST /register/device, POST /register/device/fcm
-│   │   └── user.rs         # DELETE /users/me, POST /users/report
+│   │   ├── device.rs       # POST /register/device/fcm
+│   │   ├── register.rs     # POST /register/device, POST /register/google/id_token, POST /register/google/pkce
+│   │   └── user.rs         # DELETE /users/me, DELETE /users/me/oauth, POST /users/report
 │   │
 │   └── private/            # Handlers exposed on port 3001 (Internal only)
 │       └── offline_message.rs # POST /offline_message (from RMQTT)
@@ -80,7 +81,8 @@ src/
 ├── db/                     # Modular DynamoDB and Redis operations
 │   ├── keys.rs             # Helper functions for generating partition/sort keys.
 │   ├── lib.rs              # Shared DynamoDB conversion helpers (parse_item, etc.).
-│   ├── user.rs             # User profile queries, registration transactions, deletion, reports.
+│   ├── registration.rs     # Pending registration caching and session orchestration.
+│   ├── user.rs             # User profile queries, deletion, reports.
 │   ├── device.rs           # Device registration and FCM token updates.
 │   ├── message.rs          # Offline message persistence.
 │   └── temp.rs             # Redis operations (set_temp_json_nx, get_temp_json).
