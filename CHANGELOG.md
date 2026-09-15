@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.2] - 2026-09-15
+
+### Added
+- **Google OAuth PKCE Registration Flow (`POST /register/google/pkce`)**: Added support for registering via Google OAuth 2.0 PKCE authorization code exchange (`OAuthRegisterReq`), allowing web and mobile clients to initiate registration using authorization codes.
+
+### Changed
+- **Decoupled Google OAuth & Registration Architecture**: 
+  - Extracted pure Google OAuth token exchange and ID token verification into `src/auth/google_oauth.rs` (`google_oauth_pkce` and `google_oauth_id_token`), eliminating database and registration dependencies from the authentication layer.
+  - Extracted registration session state handling and Redis temporary record caching into `src/db/registration.rs` (`initiate_registration`).
+  - Consolidated all registration handlers into `src/handlers/public/register.rs` (`register_google_pkce`, `register_google_id_token`, and `register_device`).
+  - Renamed DynamoDB resolution queries in `src/db/user.rs` to explicit, consistent names (`resolve_user_id_by_email`, `resolve_user_id_by_phone`, `get_user_profile_by_id`, and `get_user_profile_by_identifier`).
+  - Renamed `update_item_fcm` to `update_device_fcm_token` and `delete_account` to `delete_account_vxeddsa`.
+
+---
+
 ## [0.8.1] - 2026-09-12
 
 ### Changed
