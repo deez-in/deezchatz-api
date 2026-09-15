@@ -1,8 +1,4 @@
-use crate::{
-    db::{keys::email_lookup_pk, keys::lookup_sk, lib::get_item},
-    error::AppError,
-    state::AppState,
-};
+use crate::{error::AppError, state::AppState};
 use serde::Deserialize;
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -19,7 +15,7 @@ struct GoogleTokenResponse {
     access_token: Option<String>,
 }
 
-pub async fn exchange_google_auth_code(
+pub async fn google_oauth_pkce(
     state: &AppState,
     code: &str,
     code_verifier: Option<&str>,
@@ -66,10 +62,10 @@ pub async fn exchange_google_auth_code(
         AppError::Unauthorized("Missing id_token from Google".into())
     })?;
 
-    verify_google_id_token(state, &id_token).await
+    google_oauth_id_token(state, &id_token).await
 }
 
-pub async fn verify_google_id_token(
+pub async fn google_oauth_id_token(
     state: &AppState,
     id_token: &str,
 ) -> Result<OAuthIdentity, AppError> {
@@ -183,19 +179,4 @@ pub async fn verify_google_id_token(
         name: claims.name,
         picture: claims.picture,
     })
-}
-
-pub async fn resolve_user_id(state: &AppState, email: &str) -> Result<Option<String>, AppError> {
-    let email_pk = email_lookup_pk(email);
-    let existing_pointer = get_item(state, &email_pk, lookup_sk()).await?;
-
-    if let Some(ref item) = existing_pointer {
-        let user_id = item
-            .get("userId")
-            .and_then(|v| v.as_s().ok())
-            .map(|id| id.to_string());
-        Ok(user_id)
-    } else {
-        Ok(None)
-    }
 }
