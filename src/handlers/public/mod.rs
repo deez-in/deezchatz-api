@@ -1,4 +1,4 @@
 pub mod bundle;
 pub mod device;
-pub mod google_oauth;
+pub mod register;
 pub mod user;

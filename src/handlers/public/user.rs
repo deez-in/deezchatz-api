@@ -1,25 +1,58 @@
 use axum::{extract::State, Json};
-
 use uuid::Uuid;
 
 use crate::{
-    auth::oauth::{exchange_google_auth_code, resolve_user_id},
+    auth::google_oauth::google_oauth_pkce,
     auth::signature::AuthenticatedUser,
-    db::user::{delete_user_account, put_user_report},
+    db::user::{delete_user_account, put_user_report, resolve_user_id_by_email},
     error::AppError,
+    models::api::auth::OAuthDeleteReq,
+    models::api::user::{DeleteAccountResp, ReportUserReq, ReportUserResp},
     state::AppState,
 };
 
-use crate::models::api::auth::OAuthDeleteReq;
-use crate::models::api::user::{DeleteAccountResp, ReportUserReq, ReportUserResp};
-
-pub async fn delete_account(
+pub async fn delete_account_vxeddsa(
     State(state): State<AppState>,
     auth_user: AuthenticatedUser,
 ) -> Result<Json<DeleteAccountResp>, AppError> {
     delete_user_account(&state, &auth_user.user_id).await?;
 
     tracing::info!(user_id = %auth_user.user_id, "User account deleted successfully");
+
+    Ok(Json(DeleteAccountResp {
+        status: "success".to_string(),
+        message: "Account deleted".to_string(),
+    }))
+}
+
+pub async fn delete_account_by_oauth(
+    State(state): State<AppState>,
+    Json(req): Json<OAuthDeleteReq>,
+) -> Result<Json<DeleteAccountResp>, AppError> {
+    let identity = google_oauth_pkce(
+        &state,
+        &req.code,
+        req.code_verifier.as_deref(),
+        &req.redirect_uri,
+    )
+    .await?;
+
+    let user_id = match resolve_user_id_by_email(&state, &identity.email).await? {
+        Some(id) => id,
+        None => {
+            return Err(AppError::NotFound(
+                "Account not found for this Google email".to_string(),
+            ))
+        }
+    };
+
+    delete_user_account(&state, &user_id).await?;
+
+    tracing::info!(
+        user_id = %user_id,
+        email = %identity.email,
+        "User account deleted successfully via OAuth"
+    );
 
     Ok(Json(DeleteAccountResp {
         status: "success".to_string(),
@@ -80,37 +113,6 @@ pub async fn report_user(
     Ok(Json(ReportUserResp {
         status: "success".to_string(),
         report_id,
-    }))
-}
-
-pub async fn delete_account_by_oauth(
-    State(state): State<AppState>,
-    Json(req): Json<OAuthDeleteReq>,
-) -> Result<Json<DeleteAccountResp>, AppError> {
-    let identity = exchange_google_auth_code(
-        &state,
-        &req.code,
-        req.code_verifier.as_deref(),
-        &req.redirect_uri,
-    )
-    .await?;
-
-    let user_id = match resolve_user_id(&state, &identity.email).await? {
-        Some(id) => id,
-        None => {
-            return Err(AppError::NotFound(
-                "Account not found for this Google email".to_string(),
-            ))
-        }
-    };
-
-    delete_user_account(&state, &user_id).await?;
-
-    tracing::info!(user_id = %user_id, email = %identity.email, "User account deleted successfully via OAuth");
-
-    Ok(Json(DeleteAccountResp {
-        status: "success".to_string(),
-        message: "Account deleted".to_string(),
     }))
 }
 

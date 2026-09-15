@@ -43,17 +43,24 @@ async fn main() {
         )
         .route(
             "/register/device",
-            post(handlers::public::device::register_device),
+            post(handlers::public::register::register_device),
         )
         .route(
             "/register/google/id_token",
-            post(handlers::public::google_oauth::verify_id_token),
+            post(handlers::public::register::register_google_id_token),
+        )
+        .route(
+            "/register/google/pkce",
+            post(handlers::public::register::register_google_pkce),
         )
         .route(
             "/register/device/fcm",
             post(handlers::public::device::update_fcm_token),
         )
-        .route("/users/me", delete(handlers::public::user::delete_account))
+        .route(
+            "/users/me",
+            delete(handlers::public::user::delete_account_vxeddsa),
+        )
         .route(
             "/users/me/oauth",
             delete(handlers::public::user::delete_account_by_oauth),
